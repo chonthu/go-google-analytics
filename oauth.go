@@ -90,14 +90,14 @@ func checkError(err error) {
 }
 
 // GAData is the working struct of the library
-type GAData struct {
+type OauthData struct {
 	config *AuthInfo
 	tokens *AccessData
 }
 
 // ImportConfig imports client secret information from the JSON obtained
 // from Google Developer Console (API console).
-func (d *GAData) ImportConfig(filename string) (err error) {
+func (d *OauthData) ImportConfig(filename string) (err error) {
 	configFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Error opening config file: %s\n", filename)
@@ -111,7 +111,7 @@ func (d *GAData) ImportConfig(filename string) (err error) {
 	return
 }
 
-func (d *GAData) RegisterClient() (err error) {
+func (d *OauthData) RegisterClient() (err error) {
 	authUrl := fmt.Sprintf("%s?scope=%s&redirect_uri=http://%s&response_type=code&client_id=%s", d.config.Data.AuthURI, Scope, ReturnURI, d.config.Data.ClientID)
 
 	// Create new channel and spin off callback listener
@@ -148,7 +148,7 @@ func (d *GAData) RegisterClient() (err error) {
 	return
 }
 
-func (d *GAData) InitConnection() (err error) {
+func (d *OauthData) InitConnection() (err error) {
 	err = d.ImportConfig("client_secret.json")
 	checkError(err)
 
@@ -159,7 +159,7 @@ func (d *GAData) InitConnection() (err error) {
 	return
 }
 
-func (d *GAData) ProcessTokenResponse(contents []byte) (data *AccessData, err error) {
+func (d *OauthData) ProcessTokenResponse(contents []byte) (data *AccessData, err error) {
 	// trim all the line breaks
 	reg, err := regexp.Compile("\n")
 	checkError(err)
@@ -179,7 +179,7 @@ func (d *GAData) ProcessTokenResponse(contents []byte) (data *AccessData, err er
 }
 
 // Process token refresh
-func (d *GAData) ProcessRefreshResponse(contents []byte) (data *RefreshData, err error) {
+func (d *OauthData) ProcessRefreshResponse(contents []byte) (data *RefreshData, err error) {
 	// trim all the line breaks
 	reg, err := regexp.Compile("\n")
 	checkError(err)
@@ -198,7 +198,7 @@ func (d *GAData) ProcessRefreshResponse(contents []byte) (data *RefreshData, err
 }
 
 // tokenStore stores token data in a local flat file in JSON format
-func (d *GAData) tokenStore(data *AccessData) (err error) {
+func (d *OauthData) tokenStore(data *AccessData) (err error) {
 	out, err := json.Marshal(data)
 	checkError(err)
 	err = ioutil.WriteFile(LocalStoreFile, out, 0644)
@@ -207,7 +207,7 @@ func (d *GAData) tokenStore(data *AccessData) (err error) {
 }
 
 // checkTokens attempts to retrieve token data from the local flat file
-func (d *GAData) checkTokens() (err error) {
+func (d *OauthData) checkTokens() (err error) {
 	data, err := ioutil.ReadFile(LocalStoreFile)
 	if data == nil {
 		return errors.New("Local store file is empty.")
@@ -217,7 +217,7 @@ func (d *GAData) checkTokens() (err error) {
 }
 
 // RefreshToken refreshes access token in case of expiry
-func (d *GAData) refreshToken() (err error) {
+func (d *OauthData) refreshToken() (err error) {
 
 	// retrieve new tokens
 	req, err := http.PostForm(d.config.Data.TokenURI, url.Values{"refresh_token": {d.tokens.RefreshToken}, "client_id": {d.config.Data.ClientID}, "client_secret": {d.config.Data.ClientSecret}, "grant_type": {"refresh_token"}})
@@ -233,8 +233,10 @@ func (d *GAData) refreshToken() (err error) {
 	return
 }
 
-func (d *GAData) clearStore() (err error) {
+// clearStore deletes the local store file
+func (d *OauthData) clearStore() (err error) {
 	err = os.Remove(LocalStoreFile)
 	checkError(err)
+	log.Println("Cleared local token store file")
 	return
 }

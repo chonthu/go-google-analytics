@@ -1,13 +1,12 @@
 package gadata
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
 
-// GAData object
-var g *GAData = new(GAData)
+// OauthData object
+var g *OauthData = new(OauthData)
 
 // TestImportConfig verifies oauth configs
 // can be successfully loaded from JSON file
@@ -59,13 +58,12 @@ func TestProcessTokenResponse(t *testing.T) {
 	if err != nil && data == nil {
 		t.Errorf("Error processing test token response.")
 	}
-	fmt.Println(data)
 	if !strings.Contains(contents, data.AccessToken) {
 		t.Errorf("Input and instanced access tokens don't match")
 	}
 }
 
-// TestInitConnection initialises gadata object
+// TestInitConnection initialises OauthData object
 // and writes out tokens to local dat file if
 // one doesn't exist.
 func TestInitConnection(t *testing.T) {
