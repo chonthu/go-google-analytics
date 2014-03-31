@@ -66,10 +66,10 @@ func TestProcessTokenResponse(t *testing.T) {
 // TestInitConnection initialises OauthData object
 // and writes out tokens to local dat file if
 // one doesn't exist.
-func TestInitConnection(t *testing.T) {
-	g.clearStore()
-	g.InitConnection()
-}
+// func TestInitConnection(t *testing.T) {
+// 	g.clearStore()
+// 	g.InitConnection()
+// }
 
 // TestRefreshToken validates token refresh functionality
 func TestRefreshToken(t *testing.T) {

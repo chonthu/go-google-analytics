@@ -24,6 +24,7 @@ func WebCallback(ch chan string) {
 			} else {
 				ch <- strings.SplitAfter(block, "code=")[1]
 				fmt.Fprintln(w, "Authentication completed, you can close this window.")
+				close(ch)
 				return
 			}
 		}
@@ -31,5 +32,5 @@ func WebCallback(ch chan string) {
 		return
 	})
 
-	log.Fatal(http.ListenAndServe(ReturnURI, nil))
+	log.Fatalf("Server exited: %v", http.ListenAndServe(ReturnURI, nil))
 }

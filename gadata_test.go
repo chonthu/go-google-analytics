@@ -1,7 +1,7 @@
 package gadata
 
 import (
-	"fmt"
+	"log"
 	"testing"
 	"time"
 )
@@ -30,9 +30,14 @@ func TestGetData(t *testing.T) {
 	var msg string
 	select {
 	case msg = <-ch:
-		fmt.Printf("received %s", msg)
+		log.Printf("received %s", msg)
 	// time out after 10 seconds
 	case <-time.After(10 * 1e9):
-		fmt.Println("I give up waiting...")
+		log.Println("I give up waiting...")
 	}
+}
+
+func TestWasteTime(t *testing.T) {
+	// waste some time
+	time.Sleep(3000 * time.Millisecond)
 }
