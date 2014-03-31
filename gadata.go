@@ -52,6 +52,9 @@ func (a *GaRequest) ToURLValues() (out url.Values) {
 	}
 	clipEmpty(&out, "filters")
 	clipEmpty(&out, "segment")
+	if len(a.Sort) == 0 {
+		clipEmpty(&out, "sort")
+	}
 
 	return
 }
@@ -65,6 +68,13 @@ type GAData struct {
 	Request  *GaRequest
 	Response *GaResponse
 	Ch       chan string
+}
+
+// Initialise the GAData connection, ready to make a new request
+func (g *GAData) Init(ch chan string) {
+	g.Auth = new(OauthData)
+	g.Ch = ch
+	g.Auth.InitConnection()
 }
 
 // GetData queries GA API endpoint, passing the response via a channel

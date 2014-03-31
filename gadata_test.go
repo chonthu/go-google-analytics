@@ -10,10 +10,10 @@ import (
 // a basic request
 func TestGetData(t *testing.T) {
 	gaTemp := new(GAData)
-	gaTemp.Auth = new(OauthData)
+
+	// create the comms channel and initialise GAData object
 	ch := make(chan string)
-	gaTemp.Ch = ch
-	gaTemp.Auth.InitConnection()
+	gaTemp.Init(ch)
 
 	testRequest := GaRequest{"ga:43047246",
 		"2014-01-01",
@@ -22,7 +22,7 @@ func TestGetData(t *testing.T) {
 		"ga:day",
 		"",
 		"",
-		"ga:day",
+		"",
 		100}
 	// launch data pull in the background
 	go gaTemp.GetData(&testRequest)

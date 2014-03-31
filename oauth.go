@@ -1,5 +1,5 @@
 /*
-	GAData
+	OAuth handshake functionality
 */
 
 package gadata
