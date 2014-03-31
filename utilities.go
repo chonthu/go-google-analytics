@@ -9,9 +9,9 @@ import (
 )
 
 // BrowserOpen opens a URL is the OS' default web browser
-func BrowserOpen(url string) error {
-	return exec.Command("open", url).Run()
-}
+// func BrowserOpen(url string) error {
+// 	return exec.Command("open", url).Run()
+// }
 
 // WebCallback listens on a predefined port for a oauth response
 // sends back via channel once it receives a response and shuts down.
