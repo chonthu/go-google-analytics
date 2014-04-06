@@ -2,6 +2,7 @@ package gadata
 
 import (
 	"log"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -11,9 +12,8 @@ import (
 func TestGetData(t *testing.T) {
 	gaTemp := new(GAData)
 
-	// create the comms channel and initialise GAData object
-	ch := make(chan string)
-	gaTemp.Init(ch)
+	// initialise GAData object
+	gaTemp.Init()
 
 	testRequest := GaRequest{"ga:43047246",
 		"2014-01-01",
@@ -24,20 +24,36 @@ func TestGetData(t *testing.T) {
 		"",
 		"",
 		100}
-	// launch data pull in the background
-	go gaTemp.GetData(&testRequest)
 
-	var msg string
-	select {
-	case msg = <-ch:
-		log.Printf("received %s", msg)
-	// time out after 10 seconds
-	case <-time.After(10 * 1e9):
-		log.Println("I give up waiting...")
-	}
+	result := gaTemp.GetData(&testRequest)
+	log.Println(result)
 }
 
 func TestWasteTime(t *testing.T) {
 	// waste some time
 	time.Sleep(3000 * time.Millisecond)
+}
+
+// TestBatchGet checks the batch processing functionality
+func TestBatchGet(t *testing.T) {
+	var testRequests []*GaRequest
+	gaTemp := new(GAData)
+	gaTemp.Init()
+	for i := 0; i < 5; i++ {
+		testRequests = append(testRequests, &GaRequest{"ga:43047246",
+			"2014-01-0" + strconv.Itoa(i+1),
+			"2014-01-0" + strconv.Itoa(i+2),
+			"ga:visits",
+			"ga:day",
+			"",
+			"",
+			"",
+			100})
+	}
+	if results, err := gaTemp.BatchGet(testRequests); err == nil {
+		for a, b := range results {
+			log.Printf("results: %d: %s", a, b)
+		}
+	}
+
 }

@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	// "strings"
+	"time"
 )
 
 // Base constants
@@ -67,19 +69,16 @@ type GAData struct {
 	Auth     *OauthData
 	Request  *GaRequest
 	Response *GaResponse
-	Ch       chan string
 }
 
 // Initialise the GAData connection, ready to make a new request
-func (g *GAData) Init(ch chan string) {
+func (g *GAData) Init() {
 	g.Auth = new(OauthData)
-	g.Ch = ch
 	g.Auth.InitConnection()
 }
 
-// GetData queries GA API endpoint, passing the response via a channel
-func (g *GAData) GetData(request *GaRequest) (err error) {
-	g.Request = request
+// GetData queries GA API endpoint, returns response
+func (g *GAData) GetData(request *GaRequest) (response string) {
 	out := request.ToURLValues().Encode()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", DataEndpoint, out), nil)
@@ -91,7 +90,31 @@ func (g *GAData) GetData(request *GaRequest) (err error) {
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
 	checkError(err)
-	// pass the response to the channel
-	g.Ch <- string(contents)
+
+	// pass the response
+	response = string(contents)
+	// if strings.Contains(response, "Invalid Credentials") {
+	// 	g.Auth.refreshToken()
+	// 	g.GetData(request)
+	// }
+	return
+}
+
+// BatchGet runs all queries in parellel and returns the results (or times out)
+// ... need to keep track of which reply corresponds to which request!
+func (g *GAData) BatchGet(requests []*GaRequest) (responses []string, err error) {
+	ch := make(chan string)
+	for _, b := range requests {
+		go func(z *GaRequest) { ch <- g.GetData(z) }(b)
+	}
+	for i := 0; i < len(requests); i++ {
+		select {
+		case result := <-ch:
+			responses = append(responses, result)
+		case <-time.After(20 * time.Second):
+			return
+		}
+	}
+
 	return
 }

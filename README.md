@@ -9,7 +9,7 @@ https://developers.google.com/analytics/devguides/reporting/core/v3/reference
 In order to authenticate this library for use with your Google Analytics account, an oauth2 token needs to be generated. For a new project login to [Google Developers Console](https://console.developers.google.com) and Create Project. Add Analytics API to list of APIs,  create a new Client ID and download it in JSON format.
 
 ### Usage
-Example query flow:
+Example single request flow:
 
 ```
 go
@@ -21,12 +21,9 @@ import (
 func main() {
 	// initialise GAData
     gaTest := new(GAData)
-    
-    // create channel to receive results
-    ch := make(chan string)
-    
-    // initialise instance incl. authentication
-    gaTest.Init(ch)
+	
+		// initialise instance incl. authentication
+    gaTest.Init()
     
     // build a basic GA query, replace your ga ID
     testRequest := GaRequest{"ga:43047246", // GA id
@@ -39,18 +36,45 @@ func main() {
 		                         "",            // sort
 		                         100}           // results no.
     
-    // launch data pull in the background
-	go gaTemp.GetData(&testRequest)
+    // launch data
+		result := gaTemp.GetData(&testRequest)
+		fmt.Printf("results: %s\n", result)
+	}
+}
+```
+
+Example multiple requests flow:
+
+```
+go
+import (
+    "fmt"
+    "github.com/vly/go-gadata"
+)
+
+func main() {
+	// initialise GAData
+    gaTest := new(GAData)
 	
-    // wait for server response to come back
-    select {    
-	case msg := <-ch:
-		fmt.Printf("received: %s", msg)
-		
-	// time out after 10 seconds, shouldn't take longer
-	// than that unless you are running a complex request.
-	case <-time.After(10 * 1e9):
-		fmt.Println("I give up waiting...")
+		// initialise instance incl. authentication
+    gaTest.Init()
+    
+    // build a basic GA query, replace your ga ID
+    ffor i := 0; i < 5; i++ {
+		testRequests = append(testRequests, &GaRequest{"ga:43047246",
+			"2014-01-0" + strconv.Itoa(i+1),
+			"2014-01-0" + strconv.Itoa(i+2),
+			"ga:visits",
+			"ga:day",
+			"",
+			"",
+			"",
+			100})
+	}
+	if results, err := gaTemp.BatchGet(testRequests); err == nil {
+		for a, b := range results {
+			log.Printf("results: %d: %s", a, b)
+		}
 	}
 }
 ```
