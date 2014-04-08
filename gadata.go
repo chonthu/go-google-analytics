@@ -62,7 +62,10 @@ func (a *GaRequest) ToURLValues() (out url.Values) {
 }
 
 // We don't know what it will be (sort of)
-type GaResponse interface{}
+type GaResponse struct {
+	Data string
+	Pos  int
+}
 
 // GAData is the primary Google Analytics API pull structure
 type GAData struct {
@@ -78,7 +81,7 @@ func (g *GAData) Init() {
 }
 
 // GetData queries GA API endpoint, returns response
-func (g *GAData) GetData(request *GaRequest) (response string) {
+func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	out := request.ToURLValues().Encode()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", DataEndpoint, out), nil)
@@ -92,26 +95,30 @@ func (g *GAData) GetData(request *GaRequest) (response string) {
 	checkError(err)
 
 	// pass the response
-	response = string(contents)
+	response := new(GaResponse)
+	response.Data = string(contents)
+	response.Pos = key
 	// if strings.Contains(response, "Invalid Credentials") {
 	// 	g.Auth.refreshToken()
 	// 	g.GetData(request)
 	// }
-	return
+	return response
 }
 
 // BatchGet runs all queries in parellel and returns the results (or times out)
-// ... need to keep track of which reply corresponds to which request!
 func (g *GAData) BatchGet(requests []*GaRequest) (responses []string, err error) {
-	ch := make(chan string)
-	for _, b := range requests {
-		go func(z *GaRequest) { ch <- g.GetData(z) }(b)
+	ch := make(chan *GaResponse)
+	for a, b := range requests {
+		go func(x int, z *GaRequest) { ch <- g.GetData(x, z) }(a, b)
 	}
+	responses = make([]string, len(requests))
 	for i := 0; i < len(requests); i++ {
 		select {
 		case result := <-ch:
-			responses = append(responses, result)
-		case <-time.After(20 * time.Second):
+			responses[result.Pos] = result.Data
+			//responses = append(responses, result)
+		// 60 sec timeout
+		case <-time.After(60 * time.Second):
 			return
 		}
 	}

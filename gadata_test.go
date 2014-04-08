@@ -25,13 +25,8 @@ func TestGetData(t *testing.T) {
 		"",
 		100}
 
-	result := gaTemp.GetData(&testRequest)
+	result := gaTemp.GetData(1, &testRequest)
 	log.Println(result)
-}
-
-func TestWasteTime(t *testing.T) {
-	// waste some time
-	time.Sleep(3000 * time.Millisecond)
 }
 
 // TestBatchGet checks the batch processing functionality
