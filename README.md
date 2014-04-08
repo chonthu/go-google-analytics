@@ -5,6 +5,8 @@ Built for use with Core Reporting API (v3):
 
 https://developers.google.com/analytics/devguides/reporting/core/v3/reference
 
+Is being used for BAU report generation and collation. Pull requests welcome!
+
 [ ![Codeship Status for vly/go-gadata](https://www.codeship.io/projects/ee9cdc60-9af7-0131-e5cd-7e7415696371/status?branch=master)](https://www.codeship.io/projects/17520)
 
 ### Authentication
@@ -12,6 +14,7 @@ In order to authenticate this library for use with your Google Analytics account
 Place the client_secret.json in the root of your application.
 
 ### Usage
+
 Example single request flow:
 
 ```
