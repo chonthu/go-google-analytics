@@ -9,8 +9,6 @@ import (
 // TestGetData verifies Google Analytics API response to
 // a basic request
 func TestGetData(t *testing.T) {
-	// clear localStore
-	g.clearStore()
 
 	gaTemp := new(GAData)
 
