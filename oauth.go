@@ -236,7 +236,6 @@ func (d *OauthData) refreshToken() (err error) {
 // clearStore deletes the local store file
 func (d *OauthData) clearStore() (err error) {
 	err = os.Remove(LocalStoreFile)
-	checkError(err)
 	log.Println("Cleared local token store file")
 	return
 }
