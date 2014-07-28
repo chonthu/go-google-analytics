@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+	"reflect"
 	"strings"
 )
 
@@ -33,4 +34,115 @@ func WebCallback(ch chan string) {
 	})
 
 	log.Fatalf("Server exited: %v", http.ListenAndServe(ReturnURI, nil))
+}
+
+// Results Row data structure
+type SeriesData struct {
+	Data    *[]interface{}
+	Headers *[]string
+	Size    int
+}
+
+// Initiate Results row
+func Series(data *map[string]interface{}) *SeriesData {
+	output := new(SeriesData)
+
+	i := 0
+	keys := make([]string, len(*data))
+	values := make([]interface{}, len(*data))
+	for k, v := range *data {
+		keys[i] = k
+		values[i] = v
+		i++
+	}
+	output.Data = &values
+	output.Headers = &keys
+	output.Size = len(keys)
+	return output
+}
+
+func (s *SeriesData) Get(key string) (loc int, val interface{}, ok bool) {
+	for i, a := range *s.Headers {
+		if a == key {
+			val = (*s.Data)[i]
+			ok = true
+			loc = i
+			return
+		}
+	}
+	return
+}
+
+func (s *SeriesData) Add(key string, val interface{}) (ok bool) {
+	if _, _, has := s.Get(key); !has {
+		*s.Headers = append(*s.Headers, key)
+		*s.Data = append(*s.Data, val)
+		ok = true
+		s.Size += 1
+	}
+	return
+}
+
+func (s *SeriesData) Delete(key string) (ok bool) {
+	if loc, _, has := s.Get(key); has {
+		*s.Headers = append((*s.Headers)[:loc], (*s.Headers)[loc+1:]...)
+		*s.Data = append((*s.Data)[:loc], (*s.Data)[loc+1:]...)
+		ok = true
+		s.Size -= 1
+	}
+	return
+}
+
+// If row is made up of numeric numbers, get total
+func (s *SeriesData) Sum() (total float64, ok bool) {
+	total = 0.0
+	for k, v := range *s.Data {
+		if reflect.TypeOf(v) == reflect.TypeOf(1) || reflect.TypeOf(v) == reflect.TypeOf(1.1) {
+			total += float64(reflect.ValueOf(v).Float())
+		} else {
+			log.Println(k, " failed")
+			return
+		}
+	}
+	ok = true
+	return
+}
+
+// Set or replace column index
+func (s *SeriesData) SetIndex(newIndex *[]string) (ok bool) {
+	if len(*newIndex) == len(*s.Data) {
+		s.Headers = newIndex
+		ok = true
+	}
+	return
+}
+
+// Get column index
+func (s *SeriesData) Index() *[]string {
+	return s.Headers
+}
+
+// Set of results
+type DataFrameData struct {
+	Index *[]string
+	Data  *[]*SeriesData
+	Size  int
+}
+
+// Create new DataFrame
+func DataFrame(data *map[string]*SeriesData) *DataFrameData {
+	output := new(DataFrameData)
+	i := 0
+	keys := make([]string, len(*data))
+	values := make([]*SeriesData, len(*data))
+	for k, v := range *data {
+		keys[i] = k
+		values[i] = v
+		i++
+	}
+	output.Index = &keys
+	output.Data = &values
+	output.Size = len(*data)
+
+	return output
 }

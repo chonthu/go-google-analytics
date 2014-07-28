@@ -1,4 +1,4 @@
-##GAData
+##Google analytics Data pull
 
 Lightweight Golang library for pulling Google Analytics API data.
 Built for use with Core Reporting API (v3):
