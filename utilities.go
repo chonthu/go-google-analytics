@@ -36,6 +36,9 @@ func WebCallback(ch chan string) {
 	log.Fatalf("Server exited: %v", http.ListenAndServe(ReturnURI, nil))
 }
 
+// Diffmap data structure
+type DiffMap [][]int
+
 // Results Row data structure
 type SeriesData struct {
 	Data    *[]interface{}
@@ -120,6 +123,35 @@ func (s *SeriesData) SetIndex(newIndex *[]string) (ok bool) {
 // Get column index
 func (s *SeriesData) Index() *[]string {
 	return s.Headers
+}
+
+// Swap items
+func (s *SeriesData) Swap(i int, j int) {
+    s.Data[i], s.Data[j] = s.Data[j], s.Data[i]
+    s.Headers[i], s.Headers[j] = s.Headers[j], s.Headers[i]
+}
+
+// Find difference between Series
+func (s *SeriesData) Diff(s2 *SeriesData) (out *DiffMap, ok bool) {
+    if len((*s)) != len((*s)) {
+        return
+    }
+
+    out = make([][]int, len((*s)))
+    for i, v := range (*s).Data {
+        for j, z := range (*s2).Data {
+            if v == z {out[i] = j}
+        }
+    }
+    ok = true
+    return
+}
+
+// Apply DiffMap 
+func (s *SeriesData) ApplyDiff(diff *DiffMap) {
+    for a,b := range *diff {
+        s.Swap(a,b)
+   }
 }
 
 // Set of results
