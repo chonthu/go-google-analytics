@@ -127,31 +127,33 @@ func (s *SeriesData) Index() *[]string {
 
 // Swap items
 func (s *SeriesData) Swap(i int, j int) {
-    s.Data[i], s.Data[j] = s.Data[j], s.Data[i]
-    s.Headers[i], s.Headers[j] = s.Headers[j], s.Headers[i]
+	(*s.Data)[i], (*s.Data)[j] = (*s.Data)[j], (*s.Data)[i]
+	(*s.Headers)[i], (*s.Headers)[j] = (*s.Headers)[j], (*s.Headers)[i]
 }
 
 // Find difference between Series
 func (s *SeriesData) Diff(s2 *SeriesData) (out *DiffMap, ok bool) {
-    if len((*s)) != len((*s)) {
-        return
-    }
+	if len((*s.Data)) != len((*s.Data)) {
+		return
+	}
 
-    out = make([][]int, len((*s)))
-    for i, v := range (*s).Data {
-        for j, z := range (*s2).Data {
-            if v == z {out[i] = j}
-        }
-    }
-    ok = true
-    return
+	out = new(DiffMap)
+	for i, v := range *s.Data {
+		for j, z := range *s2.Data {
+			if v == z {
+				(*out)[i] = []int{i, j}
+			}
+		}
+	}
+	ok = true
+	return
 }
 
-// Apply DiffMap 
+// Apply DiffMap
 func (s *SeriesData) ApplyDiff(diff *DiffMap) {
-    for a,b := range *diff {
-        s.Swap(a,b)
-   }
+	for _, b := range *diff {
+		s.Swap(b[0], b[1])
+	}
 }
 
 // Set of results
