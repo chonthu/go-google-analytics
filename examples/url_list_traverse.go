@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	// "github.com/vly/go-gadata"
-	"../."
+	"github.com/vly/go-gadata"
+	// "../."
 	"encoding/csv"
 	"fmt"
 	"io"
