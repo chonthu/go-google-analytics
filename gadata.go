@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	// "strings"
+	"strings"
 	"time"
 )
 
@@ -100,7 +100,7 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	response.Pos = key
 	if strings.Contains(response, "Invalid Credentials") {
 		if err = g.Auth.refreshToken(); err == nil {
-			g.GetData(request)
+			g.GetData(key, request)
 		}
 	}
 	return response
