@@ -2,16 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/vly/go-gadata"
+	// "github.com/vly/go-gadata"
+	"../."
 	"log"
 	"strconv"
 )
-
-type Header struct {
-	Name  string `json:"name"`
-	cType string `json:"columnType"`
-	dType string `json:"dataType"`
-}
 
 type Data struct {
 	Headers []map[string]string `json:"columnHeaders"`

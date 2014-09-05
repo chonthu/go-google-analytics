@@ -98,9 +98,9 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	response := new(GaResponse)
 	response.Data = string(contents)
 	response.Pos = key
-	if strings.Contains(response, "Invalid Credentials") {
+	if strings.Contains(response.Data, "Invalid Credentials") {
 		if err = g.Auth.refreshToken(); err == nil {
-			g.GetData(key, request)
+			return g.GetData(key, request)
 		}
 	}
 	return response
