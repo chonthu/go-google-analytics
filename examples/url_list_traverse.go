@@ -1,11 +1,10 @@
 package main
 
 import (
-	"encoding/json"
-	"github.com/vly/go-gadata"
-	// "../."
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"github.com/vly/go-gadata"
 	"io"
 	"log"
 	"os"
@@ -52,7 +51,7 @@ func ProcessURL(line *[]string) (req *gadata.GaRequest) {
 			"ga:eventLabel==" + UrlFilter((*line)[3]),
 			"",
 			"",
-			100}
+			500}
 	} else {
 		req = &gadata.GaRequest{"ga:43047246",
 			"2014-01-01",
@@ -62,7 +61,7 @@ func ProcessURL(line *[]string) (req *gadata.GaRequest) {
 			"ga:pagePath==" + UrlFilter((*line)[3]),
 			"",
 			"",
-			100}
+			500}
 	}
 	return
 }

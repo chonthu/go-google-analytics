@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"github.com/vly/go-gadata"
-	// "../."
 	"log"
 	"strconv"
 )
@@ -26,6 +25,7 @@ func main() {
 	gaTest.Init()
 
 	i := 0
+	for 
 	requests = append(requests, &gadata.GaRequest{"ga:43047246",
 		"2014-01-0" + strconv.Itoa(i+1),
 		"2014-01-0" + strconv.Itoa(i+2),

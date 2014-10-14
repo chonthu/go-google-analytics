@@ -5,6 +5,7 @@
 package gadata
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
