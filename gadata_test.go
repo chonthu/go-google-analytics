@@ -34,7 +34,7 @@ func TestBatchGet(t *testing.T) {
 	var testRequests []*GaRequest
 	gaTemp := new(GAData)
 	gaTemp.Init()
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		testRequests = append(testRequests, &GaRequest{"ga:43047246",
 			"2014-01-0" + strconv.Itoa(i+1),
 			"2014-01-0" + strconv.Itoa(i+2),

@@ -17,6 +17,7 @@ import (
 // Base constants
 const (
 	DataEndpoint string = "https://www.googleapis.com/analytics/v3/data/ga"
+	Limit        int    = 5 // max requests / sec guard
 )
 
 // GaRequest is the Google Analytics request structure
@@ -61,10 +62,30 @@ func (a *GaRequest) ToURLValues() (out url.Values) {
 	return
 }
 
-// We don't know what it will be (sort of)
+// Initial returned response
 type GaResponse struct {
 	Data string
 	Pos  int
+}
+
+// Processed GA response
+type CleanResponse struct {
+	Columns []struct {
+		Name  string `json:"name"`
+		CType string `json:"columnType"`
+		DType string `json:"dataType"`
+	} `json:"columnHeaders"`
+	Total map[string]string `json:"totalsForAllResults"`
+	Rows  [][]string        `json:"rows"`
+}
+
+func (rawResponse GaResponse) Process() (data CleanResponse, ok bool) {
+	if err := json.Unmarshal([]byte(rawResponse.Data), &data); err == nil {
+		ok = true
+	} else {
+		fmt.Printf(err.Error())
+	}
+	return
 }
 
 // GAData is the primary Google Analytics API pull structure
@@ -107,17 +128,22 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 }
 
 // BatchGet runs all queries in parellel and returns the results (or times out)
-func (g *GAData) BatchGet(requests []*GaRequest) (responses []string, err error) {
+func (g *GAData) BatchGet(requests []*GaRequest) (responses []*CleanResponse, err error) {
 	ch := make(chan *GaResponse)
 	for a, b := range requests {
+		// if we hit max requests limit / sec, sleep for 1 sec.
+		if a%Limit == 0 {
+			time.Sleep(1 * time.Second)
+		}
 		go func(x int, z *GaRequest) { ch <- g.GetData(x, z) }(a, b)
 	}
-	responses = make([]string, len(requests))
+	responses = make([]*CleanResponse, len(requests))
 	for i := 0; i < len(requests); i++ {
 		select {
 		case result := <-ch:
-			responses[result.Pos] = result.Data
-			//responses = append(responses, result)
+			if out, ok := result.Process(); ok {
+				responses[result.Pos] = &out
+			}
 		// 60 sec timeout
 		case <-time.After(60 * time.Second):
 			return

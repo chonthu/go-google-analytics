@@ -61,13 +61,13 @@ import (
 
 func main() {
 	// initialise GAData
-    gaTest := new(GAData)
+    gaTest := new(gadata.GAData)
 	
 		// initialise instance incl. authentication
     gaTest.Init()
     
     // build a basic GA query, replace your ga ID
-    ffor i := 0; i < 5; i++ {
+    for i := 0; i < 5; i++ {
 		testRequests = append(testRequests, &GaRequest{"ga:43047246",
 			"2014-01-0" + strconv.Itoa(i+1),
 			"2014-01-0" + strconv.Itoa(i+2),
