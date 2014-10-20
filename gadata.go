@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -109,7 +110,7 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", DataEndpoint, out), nil)
 	checkError(err)
 	req.Header.Add("Authorization", "Bearer "+g.Auth.tokens.AccessToken)
-	resp, _ := client.Do(req)
+	resp, err := client.Do(req)
 	// resp, err := http.Get(fmt.Sprintf("%s?%s", DataEndpoint, out))
 	checkError(err)
 	defer resp.Body.Close()
@@ -121,6 +122,7 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	response.Data = string(contents)
 	response.Pos = key
 	if strings.Contains(response.Data, "Invalid Credentials") {
+		log.Printf(response.Data)
 		if err = g.Auth.refreshToken(); err == nil {
 			return g.GetData(key, request)
 		}

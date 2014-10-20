@@ -82,17 +82,11 @@ type GError struct {
 	ErrorDescription string `json:"error_description"`
 }
 
-// Check for normal errors
-func checkError(err error) {
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-}
-
 // GAData is the working struct of the library
 type OauthData struct {
-	config *AuthInfo
-	tokens *AccessData
+	config   *AuthInfo
+	tokens   *AccessData
+	JSONfile string
 }
 
 // ImportConfig imports client secret information from the JSON obtained
@@ -108,6 +102,7 @@ func (d *OauthData) ImportConfig(filename string) (err error) {
 		log.Fatalf("Error unmarshalling config file: %s\n", filename)
 	}
 	log.Println("Imported config file.")
+	d.JSONfile = filename
 	return
 }
 
@@ -213,6 +208,10 @@ func (d *OauthData) checkTokens() (err error) {
 		return errors.New("Local store file is empty.")
 	}
 	err = json.Unmarshal(data, &d.tokens)
+	// Case default token
+	if d.tokens.TokenType == "test" {
+		return errors.New("Invalid localstore file data.")
+	}
 	return
 }
 

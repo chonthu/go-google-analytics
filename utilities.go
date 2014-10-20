@@ -9,6 +9,26 @@ import (
 	"strings"
 )
 
+// Suggests resolution to common errors
+func errorSolution(err string) (string, bool) {
+	switch {
+	default:
+		return "", false
+	case strings.Contains(err, "no such host"):
+		return "Can't contact Google Analytics server, no internet connect?", true
+	case strings.Contains(err, "Error unmarshalling config file"):
+		return "Bad client_secret JSON file, try generating a new one", true
+	}
+
+}
+
+// Check for normal errors
+func checkError(err error) {
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+}
+
 // BrowserOpen opens a URL is the OS' default web browser
 func BrowserOpen(url string) error {
 	return exec.Command("open", url).Run()
@@ -179,4 +199,36 @@ func DataFrame(data *map[string]*SeriesData) *DataFrameData {
 	output.Size = len(*data)
 
 	return output
+}
+
+// Daterange object
+type Daterange struct {
+	Start     string
+	End       string
+	Precision string
+	Segments  []*Daterange
+	IsSplit   bool
+}
+
+// Get Time objects
+func (d Daterange) GetDates() {
+
+}
+
+// Split daterange into months
+func (d Daterange) SplitMonths() bool {
+
+	return false
+}
+
+// Split daterange into weeks
+func (d Daterange) SplitWeeks() bool {
+
+	return false
+}
+
+// Split daterange into days
+func (d Daterange) SplitDays() bool {
+	return false
+
 }

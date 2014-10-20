@@ -90,5 +90,9 @@ func main() {
 Unit tests are included with this library, use `go test ./...` to run through the set provided. 
 
 ### Changelog
+#### 0.1.1:
+- Implemented batch processing
+- New request period segmentation functionality
+- Cleaner error reporting and resolution suggestions
 #### 0.1.0:
 - Initial release
