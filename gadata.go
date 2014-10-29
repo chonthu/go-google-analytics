@@ -33,6 +33,7 @@ type GaRequest struct {
 	Segments   string `json:"segment"`
 	Sort       string `json:"sort"`
 	MaxResults int    `json:"max-results"`
+	Attempts   int
 }
 
 // clipEmpty removes empty keys from struct
@@ -126,30 +127,45 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 		if err = g.Auth.refreshToken(); err == nil {
 			return g.GetData(key, request)
 		}
+	} else if strings.Contains(response.Data, "userRateLimitExceeded") { // Retry if hitting limit max 5 times
+		if request.Attempts < 5 {
+			time.Sleep(1 * time.Second)
+			request.Attempts += 1
+			g.GetData(key, request)
+		}
+
+	}
+	if strings.Contains(response.Data, "\"error\"") {
+		log.Println(response.Data)
 	}
 	return response
 }
 
 // BatchGet runs all queries in parellel and returns the results (or times out)
 func (g *GAData) BatchGet(requests []*GaRequest) (responses []*CleanResponse, err error) {
-	ch := make(chan *GaResponse)
-	for a, b := range requests {
-		// if we hit max requests limit / sec, sleep for 1 sec.
-		if a%Limit == 0 {
-			time.Sleep(1 * time.Second)
-		}
-		go func(x int, z *GaRequest) { ch <- g.GetData(x, z) }(a, b)
-	}
 	responses = make([]*CleanResponse, len(requests))
-	for i := 0; i < len(requests); i++ {
-		select {
-		case result := <-ch:
-			if out, ok := result.Process(); ok {
-				responses[result.Pos] = &out
+	ch := make(chan *GaResponse)
+	// Start with a single request to ensure connectivity / token validity
+	_, ok := g.GetData(0, requests[0]).Process()
+	if ok {
+		for a, b := range requests {
+			// if we hit max requests limit / sec, sleep for 1 sec.
+			if a%Limit == 0 {
+				time.Sleep(1 * time.Second)
 			}
-		// 60 sec timeout
-		case <-time.After(60 * time.Second):
-			return
+			go func(x int, z *GaRequest) { ch <- g.GetData(x, z) }(a, b)
+		}
+
+		for i := 0; i < len(requests); i++ {
+			select {
+			case result := <-ch:
+				if out, ok := result.Process(); ok {
+					responses[result.Pos] = &out
+				}
+			// 60 sec timeout
+			case <-time.After(60 * time.Second):
+				return
+			}
 		}
 	}
 
