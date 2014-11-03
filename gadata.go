@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -42,6 +43,13 @@ func clipEmpty(out *url.Values, key string) {
 	if len(out.Get(key)) == 0 {
 		out.Del(key)
 	}
+}
+
+// Gen random number
+func randomOffset(min, max int) int {
+	rand.Seed(time.Now().Unix())
+	out := rand.Intn(max-min) + min
+	return out
 }
 
 // ToURLValues converts struct to url.Values struct
@@ -129,7 +137,7 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 		}
 	} else if strings.Contains(response.Data, "userRateLimitExceeded") { // Retry if hitting limit max 5 times
 		if request.Attempts < 5 {
-			time.Sleep(1 * time.Second)
+			time.Sleep(time.Duration(randomOffset(1, 10)) * time.Second)
 			request.Attempts += 1
 			g.GetData(key, request)
 		}
@@ -151,7 +159,7 @@ func (g *GAData) BatchGet(requests []*GaRequest) (responses []*CleanResponse, er
 		for a, b := range requests {
 			// if we hit max requests limit / sec, sleep for 1 sec.
 			if a%Limit == 0 {
-				time.Sleep(1 * time.Second)
+				time.Sleep(time.Duration(randomOffset(1, 5)) * time.Second)
 			}
 			go func(x int, z *GaRequest) { ch <- g.GetData(x, z) }(a, b)
 		}
