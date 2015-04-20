@@ -20,8 +20,8 @@ import (
 
 // Base constants
 const (
-	DataEndpoint string = "https://www.googleapis.com/analytics/v3/data/ga"
-	Limit        int    = 5 // max requests / sec guard
+	StdEndpoint string = "https://www.googleapis.com/analytics/v3/data/ga" // standard endpoint
+	Limit       int    = 5                                                 // max requests / sec guard
 )
 
 // GaRequest is the Google Analytics request structure
@@ -117,11 +117,11 @@ func (g *GAData) Init() {
 func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	out := request.ToURLValues().Encode()
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", DataEndpoint, out), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", StdEndpoint, out), nil)
 	utils.CheckError(err)
 	req.Header.Add("Authorization", "Bearer "+g.Auth.Tokens.AccessToken)
 	resp, err := client.Do(req)
-	// resp, err := http.Get(fmt.Sprintf("%s?%s", DataEndpoint, out))
+	// resp, err := http.Get(fmt.Sprintf("%s?%s", StdEndpoint, out))
 	utils.CheckError(err)
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
