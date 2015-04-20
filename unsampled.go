@@ -2,10 +2,6 @@ package gadata
 
 // Simple interface to generating unsampled reports
 
-import (
-	"fmt"
-)
-
 const (
 	BaseEndpoint string = "https://www.googleapis.com/analytics/v3/management/accounts/"
 	End          string = "unsampledReports"
