@@ -5,6 +5,7 @@
 package gadata
 
 import (
+	"./utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -101,14 +102,14 @@ func (rawResponse GaResponse) Process() (data CleanResponse, ok bool) {
 
 // GAData is the primary Google Analytics API pull structure
 type GAData struct {
-	Auth     *OauthData
+	Auth     *utils.OauthData
 	Request  *GaRequest
 	Response *GaResponse
 }
 
 // Initialise the GAData connection, ready to make a new request
 func (g *GAData) Init() {
-	g.Auth = new(OauthData)
+	g.Auth = new(utils.OauthData)
 	g.Auth.InitConnection()
 }
 
@@ -117,14 +118,14 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	out := request.ToURLValues().Encode()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", DataEndpoint, out), nil)
-	checkError(err)
-	req.Header.Add("Authorization", "Bearer "+g.Auth.tokens.AccessToken)
+	utils.CheckError(err)
+	req.Header.Add("Authorization", "Bearer "+g.Auth.Tokens.AccessToken)
 	resp, err := client.Do(req)
 	// resp, err := http.Get(fmt.Sprintf("%s?%s", DataEndpoint, out))
-	checkError(err)
+	utils.CheckError(err)
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
-	checkError(err)
+	utils.CheckError(err)
 
 	// pass the response
 	response := new(GaResponse)
@@ -132,7 +133,7 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	response.Pos = key
 	if strings.Contains(response.Data, "Invalid Credentials") {
 		log.Printf(response.Data)
-		if err = g.Auth.refreshToken(); err == nil {
+		if err = g.Auth.RefreshToken(); err == nil {
 			return g.GetData(key, request)
 		}
 	} else if strings.Contains(response.Data, "userRateLimitExceeded") { // Retry if hitting limit max 5 times
@@ -179,3 +180,9 @@ func (g *GAData) BatchGet(requests []*GaRequest) (responses []*CleanResponse, er
 
 	return
 }
+
+// Add appends a request to the queue
+
+// List lists all queued requests
+
+// Status shows the state of the library

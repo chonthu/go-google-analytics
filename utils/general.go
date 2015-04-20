@@ -1,4 +1,4 @@
-package gadata
+package utils
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func errorSolution(err string) (string, bool) {
 }
 
 // Check for normal errors
-func checkError(err error) {
+func CheckError(err error) {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

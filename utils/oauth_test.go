@@ -1,4 +1,4 @@
-package gadata
+package utils
 
 import (
 	"strings"

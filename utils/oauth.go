@@ -2,7 +2,7 @@
 	OAuth handshake functionality
 */
 
-package gadata
+package utils
 
 import (
 	"encoding/json"
@@ -85,7 +85,7 @@ type GError struct {
 // GAData is the working struct of the library
 type OauthData struct {
 	config   *AuthInfo
-	tokens   *AccessData
+	Tokens   *AccessData
 	JSONfile string
 }
 
@@ -115,7 +115,7 @@ func (d *OauthData) RegisterClient() (err error) {
 
 	// Open client authentication URL in default system browser
 	err = BrowserOpen(authUrl)
-	checkError(err)
+	CheckError(err)
 
 	// Listen for callback value or die with a timeout after 60 sec
 	var newAccessCode string
@@ -132,20 +132,20 @@ func (d *OauthData) RegisterClient() (err error) {
 
 	// retrieve new tokens
 	req, err := http.PostForm(d.config.Data.TokenURI, PostData.ToURLValues())
-	checkError(err)
+	CheckError(err)
 	defer req.Body.Close()
 	contents, err := ioutil.ReadAll(req.Body)
-	checkError(err)
+	CheckError(err)
 	data, err := d.ProcessTokenResponse(contents)
-	checkError(err)
-	d.tokens = data
+	CheckError(err)
+	d.Tokens = data
 
 	return
 }
 
 func (d *OauthData) InitConnection() (err error) {
 	err = d.ImportConfig("client_secret.json")
-	checkError(err)
+	CheckError(err)
 
 	err = d.checkTokens()
 	if err != nil {
@@ -157,7 +157,7 @@ func (d *OauthData) InitConnection() (err error) {
 func (d *OauthData) ProcessTokenResponse(contents []byte) (data *AccessData, err error) {
 	// trim all the line breaks
 	reg, err := regexp.Compile("\n")
-	checkError(err)
+	CheckError(err)
 	out := reg.ReplaceAllString(string(contents), "")
 
 	// check if oauth server returned an error
@@ -167,7 +167,7 @@ func (d *OauthData) ProcessTokenResponse(contents []byte) (data *AccessData, err
 		err = errors.New(fmt.Sprintf("Encountered error %s : %s", tempError.Error, tempError.ErrorDescription))
 	} else {
 		err := json.Unmarshal([]byte(out), &data)
-		checkError(err)
+		CheckError(err)
 		d.tokenStore(data)
 	}
 	return
@@ -177,7 +177,7 @@ func (d *OauthData) ProcessTokenResponse(contents []byte) (data *AccessData, err
 func (d *OauthData) ProcessRefreshResponse(contents []byte) (data *RefreshData, err error) {
 	// trim all the line breaks
 	reg, err := regexp.Compile("\n")
-	checkError(err)
+	CheckError(err)
 	out := reg.ReplaceAllString(string(contents), "")
 
 	// check if oauth server returned an error
@@ -187,7 +187,7 @@ func (d *OauthData) ProcessRefreshResponse(contents []byte) (data *RefreshData, 
 		err = errors.New(fmt.Sprintf("Encountered error %s : %s", tempError.Error, tempError.ErrorDescription))
 	} else {
 		err := json.Unmarshal([]byte(out), &data)
-		checkError(err)
+		CheckError(err)
 	}
 	return
 }
@@ -195,9 +195,9 @@ func (d *OauthData) ProcessRefreshResponse(contents []byte) (data *RefreshData, 
 // tokenStore stores token data in a local flat file in JSON format
 func (d *OauthData) tokenStore(data *AccessData) (err error) {
 	out, err := json.Marshal(data)
-	checkError(err)
+	CheckError(err)
 	err = ioutil.WriteFile(LocalStoreFile, out, 0644)
-	checkError(err)
+	CheckError(err)
 	return
 }
 
@@ -207,27 +207,27 @@ func (d *OauthData) checkTokens() (err error) {
 	if data == nil {
 		return errors.New("Local store file is empty.")
 	}
-	err = json.Unmarshal(data, &d.tokens)
+	err = json.Unmarshal(data, &d.Tokens)
 	// Case default token
-	if d.tokens.TokenType == "test" {
+	if d.Tokens.TokenType == "test" {
 		return errors.New("Invalid localstore file data.")
 	}
 	return
 }
 
 // RefreshToken refreshes access token in case of expiry
-func (d *OauthData) refreshToken() (err error) {
+func (d *OauthData) RefreshToken() (err error) {
 
 	// retrieve new tokens
-	req, err := http.PostForm(d.config.Data.TokenURI, url.Values{"refresh_token": {d.tokens.RefreshToken}, "client_id": {d.config.Data.ClientID}, "client_secret": {d.config.Data.ClientSecret}, "grant_type": {"refresh_token"}})
-	checkError(err)
+	req, err := http.PostForm(d.config.Data.TokenURI, url.Values{"refresh_token": {d.Tokens.RefreshToken}, "client_id": {d.config.Data.ClientID}, "client_secret": {d.config.Data.ClientSecret}, "grant_type": {"refresh_token"}})
+	CheckError(err)
 	defer req.Body.Close()
 	contents, err := ioutil.ReadAll(req.Body)
-	checkError(err)
+	CheckError(err)
 	data, err := d.ProcessRefreshResponse(contents)
-	checkError(err)
-	d.tokens.AccessToken = data.AccessToken
-	d.tokenStore(d.tokens)
+	CheckError(err)
+	d.Tokens.AccessToken = data.AccessToken
+	d.tokenStore(d.Tokens)
 	log.Println("Access token refreshed")
 	return
 }

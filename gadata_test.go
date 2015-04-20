@@ -15,7 +15,7 @@ func TestGetData(t *testing.T) {
 	// initialise GAData object
 	gaTemp.Init()
 
-	testRequest := GaRequest{"ga:43047246",
+	testRequest := GaRequest{"ga:23949588",
 		"2014-01-01",
 		"2014-01-02",
 		"ga:visits",
@@ -23,7 +23,8 @@ func TestGetData(t *testing.T) {
 		"",
 		"",
 		"",
-		100}
+		100,
+		5}
 
 	result := gaTemp.GetData(1, &testRequest)
 	log.Println(result)
@@ -35,7 +36,7 @@ func TestBatchGet(t *testing.T) {
 	gaTemp := new(GAData)
 	gaTemp.Init()
 	for i := 0; i < 10; i++ {
-		testRequests = append(testRequests, &GaRequest{"ga:43047246",
+		testRequests = append(testRequests, &GaRequest{"ga:23949588",
 			"2014-01-0" + strconv.Itoa(i+1),
 			"2014-01-0" + strconv.Itoa(i+2),
 			"ga:visits",
@@ -43,7 +44,8 @@ func TestBatchGet(t *testing.T) {
 			"",
 			"",
 			"",
-			100})
+			100,
+			5})
 	}
 	if results, err := gaTemp.BatchGet(testRequests); err == nil {
 		for a, b := range results {
