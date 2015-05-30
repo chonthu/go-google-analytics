@@ -29,7 +29,7 @@ func UrlFilter(url string) string {
 	return strings.SplitAfter(url, "//")[1]
 }
 
-func FlushBatch(gaTest *ga.GAData, requests []*ga.GaRequest) {
+func FlushBatch(gaTest *ga.GAData, requests []*ga.Request) {
 	if results, err := gaTest.BatchGet(requests); err == nil {
 		for a, b := range results {
 			test := new(Data)
@@ -41,9 +41,9 @@ func FlushBatch(gaTest *ga.GAData, requests []*ga.GaRequest) {
 	}
 }
 
-func ProcessURL(line *[]string) (req *ga.GaRequest) {
+func ProcessURL(line *[]string) (req *ga.Request) {
 	if (*line)[1] == "E" {
-		req = &ga.GaRequest{"ga:43047246",
+		req = &ga.Request{"ga:43047246",
 			"2014-01-01",
 			"2014-09-28",
 			"ga:uniqueEvents",
@@ -53,7 +53,7 @@ func ProcessURL(line *[]string) (req *ga.GaRequest) {
 			"",
 			500}
 	} else {
-		req = &ga.GaRequest{"ga:43047246",
+		req = &ga.Request{"ga:43047246",
 			"2014-01-01",
 			"2014-09-28",
 			"ga:visits",
@@ -70,7 +70,7 @@ func main() {
 
 	// initialise GAData
 	gaTest := new(ga.GAData)
-	// var requests []*gadata.GaRequest
+	// var requests []*gadata.Request
 
 	// initialise instance incl. authentication
 	gaTest.Init()
@@ -87,7 +87,7 @@ func main() {
 				log.Fatalln(err.Error())
 			}
 			test := new(Data)
-			result := gaTest.GetData(1, ProcessURL(&d))
+			result := gaTest.Get(1, ProcessURL(&d))
 			if ok := json.Unmarshal([]byte((*result).Data), test); ok == nil {
 				fmt.Printf("%s, %s, %s, ", d[0], d[4], d[3])
 				test.GetSeries()
@@ -96,7 +96,7 @@ func main() {
 			// i += 1
 			// if i%10 == 0 {
 			// 	FlushBatch(gaTest, requests)
-			// 	requests = make([]*gadata.GaRequest, 0)
+			// 	requests = make([]*gadata.Request, 0)
 			// }
 		}
 	} else {

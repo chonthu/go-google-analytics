@@ -13,7 +13,7 @@ func main() {
 	analtyics.Init()
 
 	// build a basic GA query, replace your ga ID
-	testRequest := ga.GaRequest{
+	testRequest := ga.Request{
 		"ga:56659181", // GA id
 		"2014-01-01",  // start date
 		"2014-01-02",  // end date
@@ -27,6 +27,6 @@ func main() {
 	}
 
 	// launch data
-	result := analtyics.GetData(1, &testRequest)
+	result := analtyics.Get(1, &testRequest)
 	fmt.Printf("results: %s\n", result)
 }

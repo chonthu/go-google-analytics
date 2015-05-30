@@ -14,7 +14,7 @@ Place the client_secret.json in the root of your application. Ps. you have to re
 
 ### Usage
 
-See Examples [here](https://github.com/chonthu/go-google-analytics/tree/master/utils)
+See Examples [here](https://github.com/chonthu/go-google-analytics/tree/master/examples)
 
 ### Testing
 Unit tests are included with this library, use `go test ./...` to run through the set provided.
@@ -22,12 +22,15 @@ Unit tests are included with this library, use `go test ./...` to run through th
 ** This doesnt really work yet, but working on it  **
 
 ### Changelog
+
 #### 1.0.0
 - cleaner naming
 - clearner working examples
+
 #### 0.1.1:
 - Implemented batch processing
 - New request period segmentation functionality
 - Cleaner error reporting and resolution suggestions
+
 #### 0.1.0:
 - Initial release

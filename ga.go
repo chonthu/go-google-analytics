@@ -1,8 +1,4 @@
-/*
-	GAData is a library for retrieving Google Analytics API (v3) data
-*/
-
-package gadata
+package ga
 
 import (
 	"encoding/json"
@@ -24,8 +20,8 @@ const (
 	Limit       int    = 5                                                 // max requests / sec guard
 )
 
-// GaRequest is the Google Analytics request structure
-type GaRequest struct {
+// Request is the Google Analytics request structure
+type Request struct {
 	Id         string `json:"ids"`
 	StartDate  string `json:"start-date"`
 	EndDate    string `json:"end-date"`
@@ -54,7 +50,7 @@ func randomOffset(min, max int) int {
 }
 
 // ToURLValues converts struct to url.Values struct
-func (a *GaRequest) ToURLValues() (out url.Values) {
+func (a *Request) ToURLValues() (out url.Values) {
 	out = url.Values{"ids": {a.Id},
 		"start-date":  {a.StartDate},
 		"end-date":    {a.EndDate},
@@ -75,7 +71,7 @@ func (a *GaRequest) ToURLValues() (out url.Values) {
 }
 
 // Initial returned response
-type GaResponse struct {
+type Response struct {
 	Data string
 	Pos  int
 }
@@ -91,7 +87,7 @@ type CleanResponse struct {
 	Rows  [][]string        `json:"rows"`
 }
 
-func (rawResponse GaResponse) Process() (data CleanResponse, ok bool) {
+func (rawResponse Response) Process() (data CleanResponse, ok bool) {
 	if err := json.Unmarshal([]byte(rawResponse.Data), &data); err == nil {
 		ok = true
 	} else {
@@ -103,8 +99,8 @@ func (rawResponse GaResponse) Process() (data CleanResponse, ok bool) {
 // GAData is the primary Google Analytics API pull structure
 type GAData struct {
 	Auth     *utils.OauthData
-	Request  *GaRequest
-	Response *GaResponse
+	Request  *Request
+	Response *Response
 }
 
 // Initialise the GAData connection, ready to make a new request
@@ -113,8 +109,8 @@ func (g *GAData) Init() {
 	g.Auth.InitConnection()
 }
 
-// GetData queries GA API endpoint, returns response
-func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
+// Get queries GA API endpoint, returns response
+func (g *GAData) Get(key int, request *Request) *Response {
 	out := request.ToURLValues().Encode()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", StdEndpoint, out), nil)
@@ -128,19 +124,19 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 	utils.CheckError(err)
 
 	// pass the response
-	response := new(GaResponse)
+	response := new(Response)
 	response.Data = string(contents)
 	response.Pos = key
 	if strings.Contains(response.Data, "Invalid Credentials") {
 		log.Printf(response.Data)
 		if err = g.Auth.RefreshToken(); err == nil {
-			return g.GetData(key, request)
+			return g.Get(key, request)
 		}
 	} else if strings.Contains(response.Data, "userRateLimitExceeded") { // Retry if hitting limit max 5 times
 		if request.Attempts < 5 {
 			time.Sleep(time.Duration(randomOffset(1, 10)) * time.Second)
 			request.Attempts += 1
-			g.GetData(key, request)
+			g.Get(key, request)
 		}
 
 	}
@@ -151,18 +147,18 @@ func (g *GAData) GetData(key int, request *GaRequest) *GaResponse {
 }
 
 // BatchGet runs all queries in parellel and returns the results (or times out)
-func (g *GAData) BatchGet(requests []*GaRequest) (responses []*CleanResponse, err error) {
+func (g *GAData) BatchGet(requests []*Request) (responses []*CleanResponse, err error) {
 	responses = make([]*CleanResponse, len(requests))
-	ch := make(chan *GaResponse)
+	ch := make(chan *Response)
 	// Start with a single request to ensure connectivity / token validity
-	_, ok := g.GetData(0, requests[0]).Process()
+	_, ok := g.Get(0, requests[0]).Process()
 	if ok {
 		for a, b := range requests {
 			// if we hit max requests limit / sec, sleep for 1 sec.
 			if a%Limit == 0 {
 				time.Sleep(time.Duration(randomOffset(1, 5)) * time.Second)
 			}
-			go func(x int, z *GaRequest) { ch <- g.GetData(x, z) }(a, b)
+			go func(x int, z *Request) { ch <- g.Get(x, z) }(a, b)
 		}
 
 		for i := 0; i < len(requests); i++ {
@@ -180,9 +176,3 @@ func (g *GAData) BatchGet(requests []*GaRequest) (responses []*CleanResponse, er
 
 	return
 }
-
-// Add appends a request to the queue
-
-// List lists all queued requests
-
-// Status shows the state of the library
