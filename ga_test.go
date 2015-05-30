@@ -10,9 +10,9 @@ import (
 // a basic request
 func TestGet(t *testing.T) {
 
-	gaTemp := new(GAData)
+	gaTemp := new(Client)
 
-	// initialise GAData object
+	// initialise Client object
 	gaTemp.Init()
 
 	testRequest := Request{"ga:23949588",
@@ -33,7 +33,7 @@ func TestGet(t *testing.T) {
 // TestBatchGet checks the batch processing functionality
 func TestBatchGet(t *testing.T) {
 	var testRequests []*Request
-	gaTemp := new(GAData)
+	gaTemp := new(Client)
 	gaTemp.Init()
 	for i := 0; i < 10; i++ {
 		testRequests = append(testRequests, &Request{"ga:23949588",

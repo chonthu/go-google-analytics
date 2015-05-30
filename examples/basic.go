@@ -1,16 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	ga "github.com/chonthu/go-google-analytics"
 )
 
 func main() {
-	// initialise GAData
-	analtyics := new(ga.GAData)
+	// initialise Client
+	analytics := new(ga.Client)
 
 	// initialise instance incl. authentication
-	analtyics.Init()
+	analytics.Init()
 
 	// build a basic GA query, replace your ga ID
 	testRequest := ga.Request{
@@ -27,6 +28,8 @@ func main() {
 	}
 
 	// launch data
-	result := analtyics.Get(1, &testRequest)
-	fmt.Printf("results: %s\n", result)
+	result := analytics.Get(1, &testRequest)
+	reponse := new(ga.ResponseData)
+	json.Unmarshal(result.Data, &reponse)
+	fmt.Println(reponse)
 }

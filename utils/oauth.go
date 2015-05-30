@@ -82,7 +82,7 @@ type GError struct {
 	ErrorDescription string `json:"error_description"`
 }
 
-// GAData is the working struct of the library
+// Client is the working struct of the library
 type OauthData struct {
 	config   *AuthInfo
 	Tokens   *AccessData

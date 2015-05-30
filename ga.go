@@ -70,9 +70,22 @@ func (a *Request) ToURLValues() (out url.Values) {
 	return
 }
 
+type ResponseData struct {
+	Id      string
+	Query   Request
+	Kind    string `json:kind`
+	Columns []struct {
+		Name  string `json:"name"`
+		CType string `json:"columnType"`
+		DType string `json:"dataType"`
+	} `json:"columnHeaders"`
+	Total map[string]string `json:"totalsForAllResults"`
+	Rows  [][]string        `json:"rows"`
+}
+
 // Initial returned response
 type Response struct {
-	Data string
+	Data []byte
 	Pos  int
 }
 
@@ -96,21 +109,21 @@ func (rawResponse Response) Process() (data CleanResponse, ok bool) {
 	return
 }
 
-// GAData is the primary Google Analytics API pull structure
-type GAData struct {
+// Client is the primary Google Analytics API pull structure
+type Client struct {
 	Auth     *utils.OauthData
 	Request  *Request
 	Response *Response
 }
 
-// Initialise the GAData connection, ready to make a new request
-func (g *GAData) Init() {
+// Initialise the Client connection, ready to make a new request
+func (g *Client) Init() {
 	g.Auth = new(utils.OauthData)
 	g.Auth.InitConnection()
 }
 
 // Get queries GA API endpoint, returns response
-func (g *GAData) Get(key int, request *Request) *Response {
+func (g *Client) Get(key int, request *Request) *Response {
 	out := request.ToURLValues().Encode()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", StdEndpoint, out), nil)
@@ -125,29 +138,31 @@ func (g *GAData) Get(key int, request *Request) *Response {
 
 	// pass the response
 	response := new(Response)
-	response.Data = string(contents)
-	response.Pos = key
-	if strings.Contains(response.Data, "Invalid Credentials") {
-		log.Printf(response.Data)
+	raw := string(contents)
+
+	if strings.Contains(raw, "Invalid Credentials") {
+		log.Printf(raw)
 		if err = g.Auth.RefreshToken(); err == nil {
 			return g.Get(key, request)
 		}
-	} else if strings.Contains(response.Data, "userRateLimitExceeded") { // Retry if hitting limit max 5 times
+	} else if strings.Contains(raw, "userRateLimitExceeded") { // Retry if hitting limit max 5 times
 		if request.Attempts < 5 {
 			time.Sleep(time.Duration(randomOffset(1, 10)) * time.Second)
 			request.Attempts += 1
 			g.Get(key, request)
 		}
+	} else if strings.Contains(raw, "\"error\"") {
+		log.Println(raw)
+	}
 
-	}
-	if strings.Contains(response.Data, "\"error\"") {
-		log.Println(response.Data)
-	}
+	response.Pos = key
+	response.Data = contents
+
 	return response
 }
 
 // BatchGet runs all queries in parellel and returns the results (or times out)
-func (g *GAData) BatchGet(requests []*Request) (responses []*CleanResponse, err error) {
+func (g *Client) BatchGet(requests []*Request) (responses []*CleanResponse, err error) {
 	responses = make([]*CleanResponse, len(requests))
 	ch := make(chan *Response)
 	// Start with a single request to ensure connectivity / token validity

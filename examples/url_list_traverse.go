@@ -29,7 +29,7 @@ func UrlFilter(url string) string {
 	return strings.SplitAfter(url, "//")[1]
 }
 
-func FlushBatch(gaTest *ga.GAData, requests []*ga.Request) {
+func FlushBatch(gaTest *ga.Client, requests []*ga.Request) {
 	if results, err := gaTest.BatchGet(requests); err == nil {
 		for a, b := range results {
 			test := new(Data)
@@ -68,9 +68,9 @@ func ProcessURL(line *[]string) (req *ga.Request) {
 
 func main() {
 
-	// initialise GAData
-	gaTest := new(ga.GAData)
-	// var requests []*gadata.Request
+	// initialise Client
+	gaTest := new(ga.Client)
+	// var requests []*Client.Request
 
 	// initialise instance incl. authentication
 	gaTest.Init()
@@ -96,7 +96,7 @@ func main() {
 			// i += 1
 			// if i%10 == 0 {
 			// 	FlushBatch(gaTest, requests)
-			// 	requests = make([]*gadata.Request, 0)
+			// 	requests = make([]*Client.Request, 0)
 			// }
 		}
 	} else {

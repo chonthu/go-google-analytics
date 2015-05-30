@@ -5,6 +5,12 @@ Built for use with Core Reporting API (v3):
 
 https://developers.google.com/analytics/devguides/reporting/core/v3/reference
 
+### Install
+
+```
+go get github.com/chonthu/go-google-analytics
+```
+
 ### Authentication
 In order to authenticate this library for use with your Google Analytics account, an oauth2 token needs to be generated. For a new project login to [Google Developers Console](https://console.developers.google.com) and Create Project. 
 
