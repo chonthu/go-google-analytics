@@ -7,7 +7,7 @@ package gadata
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/vly/go-google-analytics/utils"
+	"github.com/chonthu/go-google-analytics/utils"
 	"io/ioutil"
 	"log"
 	"math/rand"

@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"github.com/vly/go-gadata"
+	ga "github.com/chonthu/go-google-analytics"
 	"io"
 	"log"
 	"os"
@@ -29,7 +29,7 @@ func UrlFilter(url string) string {
 	return strings.SplitAfter(url, "//")[1]
 }
 
-func FlushBatch(gaTest *gadata.GAData, requests []*gadata.GaRequest) {
+func FlushBatch(gaTest *ga.GAData, requests []*ga.GaRequest) {
 	if results, err := gaTest.BatchGet(requests); err == nil {
 		for a, b := range results {
 			test := new(Data)
@@ -41,9 +41,9 @@ func FlushBatch(gaTest *gadata.GAData, requests []*gadata.GaRequest) {
 	}
 }
 
-func ProcessURL(line *[]string) (req *gadata.GaRequest) {
+func ProcessURL(line *[]string) (req *ga.GaRequest) {
 	if (*line)[1] == "E" {
-		req = &gadata.GaRequest{"ga:43047246",
+		req = &ga.GaRequest{"ga:43047246",
 			"2014-01-01",
 			"2014-09-28",
 			"ga:uniqueEvents",
@@ -53,7 +53,7 @@ func ProcessURL(line *[]string) (req *gadata.GaRequest) {
 			"",
 			500}
 	} else {
-		req = &gadata.GaRequest{"ga:43047246",
+		req = &ga.GaRequest{"ga:43047246",
 			"2014-01-01",
 			"2014-09-28",
 			"ga:visits",
@@ -69,11 +69,12 @@ func ProcessURL(line *[]string) (req *gadata.GaRequest) {
 func main() {
 
 	// initialise GAData
-	gaTest := new(gadata.GAData)
+	gaTest := new(ga.GAData)
 	// var requests []*gadata.GaRequest
 
 	// initialise instance incl. authentication
 	gaTest.Init()
+
 	// i := 0
 	if file, err := os.Open("sample.csv"); err == nil {
 		defer file.Close()
